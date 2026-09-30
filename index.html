@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Python Tuples - Alphagen Learning</title>
+
+    <!-- Google Fonts: Poppins & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome & Canvas Confetti CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    colors: {
+                        alphagen: {
+                            purple: '#5E48C4',      // Primary Brand Purple
+                            purpleDark: '#4A3AAD',  // Dark Purple hover
+                            purpleMid: '#7B6ED4',   // Decorative fills & borders
+                            purplePale: '#EAE7FE',  // Light note & highlight boxes
+                            purpleGhost: '#F5F4FF', // Page & card ghost background
+                            yellow: '#FFD071',      // Spark Yellow accent
+                            yellowDark: '#E6B84A',  // Yellow text on light surfaces
+                            yellowPale: '#FFF3CC',  // Soft highlight background
+                            nearBlack: '#1A1A1A',   // Primary text
+                            darkGrey: '#404048',    // Secondary text
+                            midGrey: '#888896',     // Captions & labels
+                            lightGrey: '#F2F2F4',   // Neutral card background
+                            cyan: '#59E4FB',        // Tech accent light
+                            cyanDark: '#055F6E',    // Tech accent dark
+                            cyanPale: '#E0FAFE',    // Tech pale background
+                            coral: '#ED5661',       // Warning / bug accent
+                            coralDark: '#993040',   // Warning dark text
+                            coralPale: '#FFF0F1'    // Warning pale background
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #0f081d;
+            font-family: 'Poppins', sans-serif;
+            color: #1A1A1A;
+            overflow-x: hidden;
+            user-select: none;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-stage {
+            width: 1280px; height: 720px;
+            margin: 16px auto 0 auto;
+            position: relative; overflow: hidden;
+            background-color: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid #EAE7FE;
+        }
+
+        .slide-panel {
+            width: 1280px; height: 720px;
+            padding: 36px 52px;
+            display: none; flex-direction: column; justify-content: space-between;
+            position: absolute; top: 0; left: 0;
+            background: #ffffff;
+        }
+
+        .slide-panel.active {
+            display: flex;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-interactive {
+            cursor: pointer;
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease, background-color 0.2s ease;
+        }
+        .btn-interactive:hover { transform: translateY(-2px) scale(1.02); }
+        .btn-interactive:active { transform: translateY(1px) scale(0.98); }
+
+        .nav-bar {
+            width: 1280px; margin: 12px auto 16px auto;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 16px; z-index: 100;
+        }
+
+        .nav-btn {
+            background: #2A1C68; color: #FFD071;
+            border: 2px solid #5E48C4; padding: 12px 28px;
+            border-radius: 16px; font-weight: 700; font-size: 16px;
+            cursor: pointer; display: flex; align-items: center; gap: 10px;
+            transition: all 0.2s ease;
+        }
+        .nav-btn:hover:not(:disabled) { background: #5E48C4; color: #ffffff; transform: scale(1.04); }
+        .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .dot-indicator {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #2A1C68; cursor: pointer; transition: all 0.2s ease;
+        }
+        .dot-indicator.active {
+            background: #FFD071; width: 28px; border-radius: 10px;
+        }
+
+        .spark-wavy-underline {
+            position: relative; display: inline-block; color: #5E48C4;
+        }
+        .spark-wavy-underline::after {
+            content: ''; position: absolute; left: 0; bottom: -8px; width: 100%; height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 4' preserveAspectRatio='none'%3E%3Cpath d='M0 2 Q 5 0, 10 2 T 20 2' fill='none' stroke='%23FFD071' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: repeat-x; background-size: 20px 12px;
+        }
+
+        .quiz-option {
+            background: #ffffff; border: 2px solid #EAE7FE;
+            border-radius: 18px; padding: 14px 20px;
+            font-size: 15px; font-weight: 600; color: #1A1A1A;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .quiz-option:hover { border-color: #5E48C4; background: #F5F4FF; }
+        .quiz-option.correct { background: #F0FDF4 !important; border-color: #22C55E !important; color: #166534 !important; }
+        .quiz-option.wrong { background: #FFF0F1 !important; border-color: #ED5661 !important; color: #993040 !important; }
+
+        .code-block {
+            background: #1A1A1A; color: #F2F2F4;
+            font-family: 'Fira Code', monospace;
+            padding: 16px; border-radius: 16px;
+            border: 1px solid #404048;
+            font-size: 14px; line-height: 1.6;
+        }
+
+        .checkbox-card {
+            background: #ffffff; border: 2px solid #EAE7FE;
+            border-radius: 20px; padding: 16px 22px;
+            display: flex; align-items: center; gap: 18px;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .checkbox-card:hover { border-color: #5E48C4; background: #F5F4FF; }
+        .checkbox-card.checked { background: #F0FDF4; border-color: #22C55E; }
+        .checkbox-box {
+            width: 32px; height: 32px; border: 2px solid #5E48C4;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: #ffffff; font-size: 16px; transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .checkbox-card.checked .checkbox-box { background: #22C55E; border-color: #22C55E; }
+    </style>
+</head>
+<body>
+
+    <div class="slide-stage">
+
+        <!-- Header Navigation -->
+        <header class="w-full bg-white border-b border-alphagen-purplePale px-8 py-3 flex items-center justify-between z-50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-alphagen-purple flex items-center justify-center text-white text-xl shadow-md shadow-alphagen-purple/20">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base text-alphagen-purple tracking-tight">
+                        Python Data Structures: <span class="text-alphagen-yellowDark font-black">Tuples</span>
+                    </h1>
+                    <p class="text-xs font-semibold text-alphagen-cyanDark">Immutable Collections in Python</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2" id="header-dots-container"></div>
+
+            <div class="flex items-center gap-3">
+                <span id="slide-counter-pill" class="text-xs font-extrabold text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-full border border-alphagen-purplePale">
+                    Slide 1 / 10
+                </span>
+                <select id="slide-dropdown" onchange="goToSlide(parseInt(this.value))" class="text-xs font-extrabold text-alphagen-nearBlack bg-alphagen-lightGrey hover:bg-slate-200 border border-slate-200 px-3.5 py-1.5 rounded-xl cursor-pointer focus:outline-none focus:border-alphagen-purple transition">
+                    <option value="1">1. Welcome</option>
+                    <option value="2">2. Warm-Up: Lists</option>
+                    <option value="3">3. Real-Life Analogy</option>
+                    <option value="4">4. Concept & Syntax</option>
+                    <option value="5">5. Tuple Indexing</option>
+                    <option value="6">6. Packing & Unpacking</option>
+                    <option value="7">7. Concatenation</option>
+                    <option value="8">8. Tuple Functions & Slicing</option>
+                    <option value="9">9. Implementation Checklist</option>
+                    <option value="10">10. Final Quiz & Next Lesson</option>
+                </select>
+                <button onclick="toggleAudio()" id="audio-btn" class="w-9 h-9 rounded-xl bg-alphagen-purpleGhost hover:bg-alphagen-purplePale text-alphagen-purple border border-alphagen-purplePale flex items-center justify-center text-sm transition btn-interactive">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- SLIDE 1: WELCOME -->
+        <div id="slide-1" class="slide-panel active justify-center items-center text-center">
+            <div class="inline-flex items-center gap-2 bg-alphagen-purpleGhost border border-alphagen-purplePale text-alphagen-purple text-xs font-extrabold px-5 py-2.5 rounded-full mb-8 tracking-wider">
+                PYTHON DATA STRUCTURES
+            </div>
+
+            <h1 class="text-6xl md:text-7xl font-extrabold mb-12 tracking-tight max-w-4xl leading-tight">
+                <span class="text-alphagen-purple">Mastering</span> <span class="spark-wavy-underline">Python Tuples</span>
+            </h1>
+
+            <button onclick="nextSlide(); playSound('pop');" class="bg-alphagen-yellow hover:bg-alphagen-yellowDark text-alphagen-nearBlack font-extrabold text-xl px-12 py-5 rounded-2xl shadow-xl shadow-alphagen-yellow/30 btn-interactive flex items-center gap-4">
+                <span>Start Exploring</span>
+                <i class="fa-solid fa-play"></i>
+            </button>
+        </div>
+
+        <!-- SLIDE 2: WARM-UP CHECK (LISTS) -->
+        <div id="slide-2" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Warm-Up Check</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    Let's Review: <span class="text-alphagen-purple">Lists</span>
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Before we dive into Tuples, let's verify what you remember about Lists!</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6 my-auto">
+                <!-- Q1 -->
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-extrabold text-alphagen-purple bg-white px-2.5 py-1 rounded-md border border-alphagen-purplePale">Question 1</span>
+                        <h3 class="text-sm font-bold text-alphagen-nearBlack mt-3 mb-4">What is a List in Python?</h3>
+                    </div>
+                    <div class="space-y-2.5">
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 1, 2, this)">A single static number</div>
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 1, 2, this)">A collection of elements that can be changed</div>
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 1, 2, this)">A mathematical function</div>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-extrabold text-alphagen-purple bg-white px-2.5 py-1 rounded-md border border-alphagen-purplePale">Question 2</span>
+                        <h3 class="text-sm font-bold text-alphagen-nearBlack mt-3 mb-4">How do you add an element to the end of a list?</h3>
+                    </div>
+                    <div class="space-y-2.5">
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 2, 1, this)"><code>.append()</code> </div>
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 2, 1, this)"><code>.insert_last()</code></div>
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 2, 1, this)"><code>.add()</code></div>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-extrabold text-alphagen-purple bg-white px-2.5 py-1 rounded-md border border-alphagen-purplePale">Question 3</span>
+                        <h3 class="text-sm font-bold text-alphagen-nearBlack mt-2 mb-2">How do you change the 2nd element?</h3>
+                        <div class="code-block p-2.5 text-xs mb-3">fruits = ["Apple", "Banana", "Cherry", "Mango"]<br># Change "Banana" to "Orange"</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 3, 3, this)"><code>fruits[2] = "Orange"</code></div>
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 3, 3, this)"><code>fruits.change("Orange")</code></div>
+                        <div class="quiz-option text-xs" onclick="checkQuiz(2, 3, 3, this)"><code>fruits[1] = "Orange"</code></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="slide-2-banner" class="bg-alphagen-purpleGhost border-2 border-dashed border-alphagen-purple p-3.5 rounded-2xl text-sm text-alphagen-purple font-extrabold text-center">
+                Answer all 3 warm-up questions to unlock the next concept!
+            </div>
+        </div>
+
+        <!-- SLIDE 3: REAL-LIFE ANALOGY (SEALED MAIL BOX) -->
+        <div id="slide-3" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Real-Life Analogy</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    The <span class="text-alphagen-purple">Let's Pack Gifts for your Friend</span> 
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Pack your gift box with items to send to your friend, then seal and ship it out!</p>
+            </div>
+
+            <div class="grid grid-cols-12 gap-8 my-auto items-center">
+                <!-- Left Column: Item Selection -->
+                <div class="col-span-5 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl space-y-4">
+                    <h3 class="font-extrabold text-sm text-alphagen-nearBlack">Click items to add to your mail box:</h3>
+                    
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button onclick="addToyToBox('🧸 Teddy Bear')" class="quiz-option text-xs justify-center gap-2 btn-interactive">🧸 Teddy Bear</button>
+                        <button onclick="addToyToBox('🤖 Robot Toy')" class="quiz-option text-xs justify-center gap-2 btn-interactive">🤖 Robot Toy</button>
+                        <button onclick="addToyToBox('🏎️ Race Car')" class="quiz-option text-xs justify-center gap-2 btn-interactive">🏎️ Race Car</button>
+                        <button onclick="addToyToBox('🎮 Game Console')" class="quiz-option text-xs justify-center gap-2 btn-interactive">🎮 Game Console</button>
+                        <button onclick="addToyToBox('🧩 Puzzle')" class="quiz-option text-xs justify-center gap-2 btn-interactive">🧩 Puzzle</button>
+                        <button onclick="clearToyBox()" class="bg-alphagen-coralPale hover:bg-red-200 text-alphagen-coralDark font-extrabold text-xs p-2.5 rounded-xl border border-alphagen-coral transition">Reset Box 🔄</button>
+                    </div>
+
+                    <button onclick="sealAndSendPackage()" id="btn-seal-package" class="w-full bg-alphagen-purple hover:bg-alphagen-purpleDark text-white font-extrabold py-3.5 rounded-xl text-sm shadow-md btn-interactive flex items-center justify-center gap-2">
+                        <span>Seal & Ship Package</span> 
+                    </button>
+                </div>
+
+                <!-- Right Column: Package Box Visualizer -->
+                <div class="col-span-7 bg-slate-900 border-4 border-slate-800 rounded-3xl p-6 text-white flex flex-col justify-between relative min-h-[300px] shadow-2xl">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-xs font-mono text-alphagen-yellow font-bold uppercase tracking-wider"><i class="fa-solid fa-box-archive mr-1"></i> Shipping Package Container</span>
+                        <span id="package-status-badge" class="bg-amber-500 text-slate-950 font-bold text-xs px-3 py-1 rounded-full uppercase font-mono">Open & Editable</span>
+                    </div>
+
+                    <!-- Items Container Box -->
+                    <div class="my-4 bg-slate-800 border-2 border-dashed border-alphagen-purplePale rounded-2xl p-4 min-h-[140px] flex flex-wrap gap-2.5 items-center justify-center relative overflow-hidden" id="package-box-contents">
+                        <span class="text-xs text-slate-400 font-mono" id="empty-box-msg">Box is currently empty! Click toys on the left to pack them inside.</span>
+                    </div>
+
+                    <div id="analogy-q-box" class="hidden bg-slate-800 p-4 rounded-2xl border-2 border-alphagen-yellow text-center space-y-3">
+                        <p class="text-xs font-bold text-white leading-relaxed">
+                            😱 <strong>Wait! You noticed you forgot to include a Nintendo Switch in the box!</strong><br>
+                            Now that the package is sealed and shipped, can you modify or add items directly inside the box?
+                        </p>
+                        <div class="flex justify-center gap-4">
+                            <button onclick="answerPackageAnalogy('yes')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-6 py-2 rounded-xl text-xs transition">Yes</button>
+                            <button onclick="answerPackageAnalogy('no')" class="bg-alphagen-yellow hover:bg-alphagen-yellowDark text-alphagen-nearBlack font-extrabold px-8 py-2 rounded-xl text-xs transition shadow-md">No</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analogy-conclusion" class="bg-alphagen-purpleGhost border-2 border-alphagen-purple p-3.5 rounded-2xl text-center text-sm font-bold text-alphagen-purple">
+                Pack items into your shipping box and click "Seal & Ship Package"!
+            </div>
+        </div>
+
+        <!-- SLIDE 4: CONCEPT & SYNTAX -->
+        <div id="slide-4" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Core Concept</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    What is a <span class="text-alphagen-purple">Tuple</span>?
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">A Tuple is a collection of data like a list, but it is <strong>Immutable</strong>—you can never delete or make a change!</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8 my-auto items-center">
+                <div class="space-y-5">
+                    <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-6 rounded-2xl shadow-xs">
+                        <h3 class="font-extrabold text-alphagen-nearBlack text-lg flex items-center gap-3">
+                            <i class="fa-solid fa-lock text-alphagen-purple"></i> Immutable Data Structure
+                        </h3>
+                        <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+                            <strong>Immutable</strong> means unchangeable. Once a tuple is created in Python, its elements are locked in memory forever!
+                        </p>
+                    </div>
+                    <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purple p-6 rounded-2xl shadow-xs">
+                        <h3 class="font-extrabold text-alphagen-purple text-lg flex items-center gap-3">
+                            <i class="fa-solid fa-code text-alphagen-purple"></i> Syntax: Parentheses <code>()</code>
+                        </h3>
+                        <p class="text-sm text-slate-700 mt-2">
+                            Tuples use <strong>Parentheses <code>()</code></strong> instead of square brackets <code>[]</code>.
+                        </p>
+                        <div class="code-block mt-3 text-sm">
+                            <span class="text-slate-400"># Creating an Animals Tuple</span><br>
+                            animals = ("Lion", "Tiger", "Bear", "Elephant")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 rounded-3xl p-7 border-4 border-slate-800 shadow-2xl relative text-white">
+                    <h3 class="font-extrabold text-alphagen-yellow text-center text-xl mb-2">What is an Index? 📍</h3>
+                    <p class="text-xs text-slate-300 text-center mb-6">An <strong>Index</strong> is the numerical <em>position</em> of each item in the collection starting from 0!</p>
+                    
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div>
+                            <div class="text-xs text-alphagen-cyan font-mono mb-1 font-bold">Index 0</div>
+                            <div class="bg-slate-800 border-2 border-alphagen-purple text-white p-3 rounded-xl font-mono text-xs shadow-inner">"Lion"</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-alphagen-cyan font-mono mb-1 font-bold">Index 1</div>
+                            <div class="bg-slate-800 border-2 border-alphagen-purple text-white p-3 rounded-xl font-mono text-xs shadow-inner">"Tiger"</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-alphagen-cyan font-mono mb-1 font-bold">Index 2</div>
+                            <div class="bg-slate-800 border-2 border-alphagen-purple text-white p-3 rounded-xl font-mono text-xs shadow-inner">"Bear"</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-alphagen-cyan font-mono mb-1 font-bold">Index 3</div>
+                            <div class="bg-slate-800 border-2 border-alphagen-purple text-white p-3 rounded-xl font-mono text-xs shadow-inner">"Elephant"</div>
+                        </div>
+                    </div>
+                    <div class="mt-6 code-block bg-black text-center text-sm font-bold">
+                        print(animals[1]) <span class="text-green-400"># Output: Tiger</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: TUPLE INDEXING CHECK -->
+        <div id="slide-5" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Knowledge Check</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    Quick Tuple Indexing Check 
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Since you know Lists, Tuple indexing is straightforward! Test accessing elements by position.</p>
+            </div>
+
+            <div class="flex flex-col items-center justify-center my-auto w-full max-w-3xl mx-auto space-y-8">
+                <div class="code-block w-full text-center text-lg shadow-lg py-4">
+                    names = ("Alice", "Bob", "Charlie", "Diana", "Ethan")
+                </div>
+
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-8 rounded-3xl w-full text-center shadow-md">
+                    <h3 class="font-extrabold text-alphagen-nearBlack text-lg mb-6">How do you access and print <span class="text-alphagen-purple font-mono bg-white px-3 py-1 rounded-lg border border-alphagen-purplePale">"Charlie"</span>?</h3>
+                    <div class="flex items-center justify-center gap-4">
+                        <span class="font-mono font-bold text-slate-700 text-lg">print(</span>
+                        <input type="text" id="index-input" placeholder="e.g. names[0]" class="px-5 py-3 border-2 border-alphagen-purplePale rounded-xl font-mono outline-none focus:border-alphagen-purple w-56 text-center text-base font-bold shadow-inner">
+                        <span class="font-mono font-bold text-slate-700 text-lg">)</span>
+                        <button onclick="checkIndexInput()" class="bg-alphagen-purple hover:bg-alphagen-purpleDark text-white font-extrabold px-8 py-3.5 rounded-xl transition shadow-md btn-interactive text-base">Check</button>
+                    </div>
+                    <div id="index-feedback" class="mt-5 text-sm font-extrabold h-6"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: PACKING & UNPACKING -->
+        <div id="slide-6" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Cool Features</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    Tuple Packing & Unpacking 
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Pack values into 1 tuple, then unpack them into individual variables in a single step!</p>
+            </div>
+
+            <!-- Concept Explanation Cards -->
+            <div class="grid grid-cols-2 gap-6 my-2">
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-4 rounded-2xl">
+                    <h3 class="font-extrabold text-alphagen-purple text-sm flex items-center gap-2"><i class="fa-solid fa-box-archive"></i> What is Tuple Packing?</h3>
+                    <p class="text-xs text-slate-700 mt-1">Packing is putting multiple values into a single tuple variable.<br><code class="font-bold text-alphagen-purple">my_tuple = ("Alice", "Bob", "Charlie", "Diana", "Ethan")</code></p>
+                </div>
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-4 rounded-2xl">
+                    <h3 class="font-extrabold text-alphagen-purple text-sm flex items-center gap-2"><i class="fa-solid fa-box-open"></i> What is Tuple Unpacking?</h3>
+                    <p class="text-xs text-slate-700 mt-1">Unpacking extracts tuple elements directly into separate variables!<br><code class="font-bold text-alphagen-purple">a, b, c, d, e = my_tuple</code></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 my-auto items-stretch">
+                <!-- Left: Interactive Form -->
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-extrabold text-alphagen-nearBlack text-xs mb-2">Enter minimum 5 names to pack into a Tuple:</h3>
+                        <div class="space-y-2">
+                            <input type="text" id="pack-1" placeholder="Name 1" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-bold outline-none focus:border-alphagen-purple">
+                            <input type="text" id="pack-2" placeholder="Name 2" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-bold outline-none focus:border-alphagen-purple">
+                            <input type="text" id="pack-3" placeholder="Name 3" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-bold outline-none focus:border-alphagen-purple">
+                            <input type="text" id="pack-4" placeholder="Name 4" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-bold outline-none focus:border-alphagen-purple">
+                            <input type="text" id="pack-5" placeholder="Name 5" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-bold outline-none focus:border-alphagen-purple">
+                        </div>
+                    </div>
+                    <button onclick="simulatePacking()" class="w-full mt-3 bg-alphagen-purple hover:bg-alphagen-purpleDark text-white font-extrabold py-3 rounded-xl btn-interactive shadow-md text-xs">
+                        Pack & Unpack 
+                    </button>
+                </div>
+
+                <!-- Right: Code Visualization -->
+                <div class="bg-slate-900 border-2 border-slate-800 p-5 rounded-2xl flex flex-col justify-center shadow-xl">
+                    <h3 class="font-extrabold text-alphagen-yellow text-xs mb-3"><i class="fa-solid fa-terminal"></i> Python Execution Output:</h3>
+                    
+                    <div id="packing-code" class="code-block text-xs opacity-40 transition-opacity duration-500">
+                        <span class="text-slate-400"># 1. Tuple Packing</span><br>
+                        my_tuple = (<span id="out-pack" class="text-green-300">...</span>)<br><br>
+                        <span class="text-slate-400"># 2. Tuple Unpacking</span><br>
+                        <span class="text-yellow-200">a, b, c, d, e</span> = my_tuple<br><br>
+                        <span class="text-slate-400"># Unpacked Variables:</span><br>
+                        print(a) <span class="text-slate-400">-></span> <span id="out-a" class="text-white">?</span><br>
+                        print(b) <span class="text-slate-400">-></span> <span id="out-b" class="text-white">?</span><br>
+                        print(c) <span class="text-slate-400">-></span> <span id="out-c" class="text-white">?</span><br>
+                        print(d) <span class="text-slate-400">-></span> <span id="out-d" class="text-white">?</span><br>
+                        print(e) <span class="text-slate-400">-></span> <span id="out-e" class="text-white">?</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: CONCATENATION -->
+        <div id="slide-7" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Modifying Data</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    How do we add elements? <span class="text-alphagen-purple">Concatenation</span> ➕
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Tuples are immutable (no <code>.append()</code>), but we can combine tuples using the <code>+</code> operator to create a NEW tuple!</p>
+            </div>
+
+            <div class="flex flex-col items-center justify-center my-auto w-full space-y-6 max-w-4xl mx-auto">
+                <!-- Explicit Code Display -->
+                <div class="code-block w-full text-sm font-mono shadow-md border-2 border-slate-700">
+                    <span class="text-slate-400"># Define two separate tuple variables:</span><br>
+                    <span class="text-alphagen-yellow font-bold">tuple_1</span> = ("Apple", "Banana", "Cherry")<br>
+                    <span class="text-alphagen-cyan font-bold">tuple_2</span> = ("Date", "Elderberry")<br><br>
+                    <span class="text-slate-400"># Concatenate tuples into a new variable:</span><br>
+                    <span class="text-green-300 font-bold">combined_tuple</span> = <span class="text-alphagen-yellow font-bold">tuple_1</span> + <span class="text-alphagen-cyan font-bold">tuple_2</span><br>
+                    print(<span class="text-green-300 font-bold">combined_tuple</span>)
+                </div>
+
+                <div class="w-full text-center">
+                    <button onclick="showConcatenation()" id="concat-btn" class="bg-alphagen-yellow hover:bg-alphagen-yellowDark text-alphagen-nearBlack font-extrabold px-10 py-4 rounded-2xl btn-interactive shadow-lg text-sm mb-4">
+                        Run Code 
+                    </button>
+                    
+                    <div id="concat-result" class="hidden flex-col items-center">
+                        <div class="text-2xl font-bold text-alphagen-purple mb-2">⬇️ Terminal Output</div>
+                        <div class="bg-slate-900 border-2 border-slate-700 p-5 rounded-2xl shadow-2xl text-center w-full max-w-xl">
+                            <div class="font-mono font-extrabold text-lg text-white">
+                                (<span class="text-alphagen-yellow">'Apple', 'Banana', 'Cherry'</span>, <span class="text-alphagen-cyan">'Date', 'Elderberry'</span>)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: TUPLE FUNCTIONS & SLICING PLAYGROUND -->
+        <div id="slide-8" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Interactive Playground</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    Tuple Functions & <span class="text-alphagen-purple"></span> 
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Enter numbers and adjust the slicing dropdowns to inspect tuple evaluation in real-time!</p>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+                <!-- Input Area -->
+                <div class="col-span-5 bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                        <label class="font-extrabold text-xs text-alphagen-nearBlack mb-2 block">1. Enter numbers (comma separated):</label>
+                        <input type="text" id="tup-playground-input" value="10, 42, 5, 8, 99, 23" oninput="updateTuplePlayground()" class="w-full px-4 py-2.5 border-2 border-alphagen-purplePale rounded-xl font-mono text-xs font-bold outline-none focus:border-alphagen-purple mb-4 bg-white">
+                        
+                        <div class="bg-white border border-slate-200 p-3 rounded-xl text-center shadow-inner">
+                            <span class="text-xs text-slate-500 font-bold block mb-1">Live Tuple Variable:</span>
+                            <div id="tup-live-display" class="font-mono font-extrabold text-alphagen-purple text-sm">(10, 42, 5, 8, 99, 23)</div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Slicing Controls -->
+                    <div class="bg-white border-2 border-alphagen-purplePale p-3.5 rounded-xl space-y-2">
+                        <span class="font-extrabold text-xs text-alphagen-purple block">2. Slicing Controls <code>my_tuple[start:end]</code>:</span>
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1">
+                                <label class="text-[10px] font-extrabold text-slate-500 uppercase block mb-1">Start Index</label>
+                                <select id="slice-start" onchange="updateTuplePlayground()" class="w-full bg-slate-100 border border-slate-300 rounded-lg p-1.5 text-xs font-mono font-bold focus:outline-none focus:border-alphagen-purple">
+                                    <option value="0">0</option>
+                                    <option value="1" selected>1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[10px] font-extrabold text-slate-500 uppercase block mb-1">End Index</label>
+                                <select id="slice-end" onchange="updateTuplePlayground()" class="w-full bg-slate-100 border border-slate-300 rounded-lg p-1.5 text-xs font-mono font-bold focus:outline-none focus:border-alphagen-purple">
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4" selected>4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output Display Area -->
+                <div class="col-span-7 grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-md">
+                        <span class="text-xs text-slate-400 font-mono mb-1">len(my_tuple)</span>
+                        <span id="tup-len" class="text-3xl font-extrabold text-white">6</span>
+                        <span class="text-[10px] text-slate-400 mt-1">Total length</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-md">
+                        <span class="text-xs text-slate-400 font-mono mb-1">min(my_tuple)</span>
+                        <span id="tup-min" class="text-3xl font-extrabold text-alphagen-cyan">5</span>
+                        <span class="text-[10px] text-slate-400 mt-1">Smallest element</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-md">
+                        <span class="text-xs text-slate-400 font-mono mb-1">max(my_tuple)</span>
+                        <span id="tup-max" class="text-3xl font-extrabold text-alphagen-yellow">99</span>
+                        <span class="text-[10px] text-slate-400 mt-1">Largest element</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-md">
+                        <span class="text-xs text-slate-400 font-mono mb-1" id="slice-expression-label">my_tuple[1:4]</span>
+                        <span id="tup-slice" class="text-lg font-extrabold text-green-300 mt-1">(42, 5, 8)</span>
+                        <span class="text-[10px] text-slate-400 mt-1">Sliced sub-tuple</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CODE IMPLEMENTATION CHECKLIST & SOLUTION -->
+        <div id="slide-9" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Coding Lab</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    Code Implementation Checklist 
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Build your tuple script in Python and check off the requirements as you execute them!</p>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+                <!-- Checklist Cards -->
+                <div class="col-span-6 space-y-3">
+                    <div class="checkbox-card" id="chk-1" onclick="toggleTaskCheckbox('chk-1')">
+                        <div class="checkbox-box"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <h3 class="font-extrabold text-xs text-alphagen-nearBlack">1. Create a Tuple of 5 numbers</h3>
+                           
+                        </div>
+                    </div>
+
+                    <div class="checkbox-card" id="chk-2" onclick="toggleTaskCheckbox('chk-2')">
+                        <div class="checkbox-box"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <h3 class="font-extrabold text-xs text-alphagen-nearBlack">2. Print Length, Min, and Max</h3>
+                          
+                        </div>
+                    </div>
+
+                    <div class="checkbox-card" id="chk-3" onclick="toggleTaskCheckbox('chk-3')">
+                        <div class="checkbox-box"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <h3 class="font-extrabold text-xs text-alphagen-nearBlack">3. Slice the Tuple</h3>
+                          
+                        </div>
+                    </div>
+
+                    <div class="checkbox-card" id="chk-4" onclick="toggleTaskCheckbox('chk-4')">
+                        <div class="checkbox-box"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <h3 class="font-extrabold text-xs text-alphagen-nearBlack">4. Prove Immutability (Will error!)</h3>
+                            <p class="text-[11px] text-slate-500">Try to modify: <code>scores[0] = 50</code> to observe <code>TypeError</code>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solution Code Reference Drawer -->
+                
+            </div>
+            
+            <div class="bg-alphagen-purpleGhost border-2 border-dashed border-alphagen-purple p-2.5 rounded-2xl text-center text-alphagen-purple font-bold text-xs">
+                Check off tasks as you run the code in your Python IDE!
+            </div>
+        </div>
+
+        <!-- SLIDE 10: FINAL QUIZ & NEXT LESSON PREVIEW -->
+        <div id="slide-10" class="slide-panel">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-wider text-alphagen-purple bg-alphagen-purpleGhost px-3.5 py-1.5 rounded-md border border-alphagen-purplePale">Knowledge Check</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-2 text-alphagen-nearBlack">
+                    Final Challenge <span class="text-alphagen-yellowDark">🏆</span>
+                </h2>
+                <p class="text-sm text-alphagen-darkGrey mt-1">Answer these final questions to complete the Tuple lesson!</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 my-auto items-stretch">
+                <!-- Q1 -->
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl">
+                    <h3 class="font-extrabold text-alphagen-nearBlack text-sm mb-4">1. What is the main difference between Lists and Tuples?</h3>
+                    <div class="space-y-3">
+                        <button onclick="checkFinalQuiz(1, false, this)" class="quiz-option text-xs w-full justify-start gap-3">Lists hold text, Tuples hold numbers</button>
+                        <button onclick="checkFinalQuiz(1, true, this)" class="quiz-option text-xs w-full justify-start gap-3">Lists are mutable (changeable), Tuples are immutable</button>
+                        <button onclick="checkFinalQuiz(1, false, this)" class="quiz-option text-xs w-full justify-start gap-3">Tuples don't use indexes</button>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="bg-alphagen-purpleGhost border-2 border-alphagen-purplePale p-5 rounded-2xl">
+                    <h3 class="font-extrabold text-alphagen-nearBlack text-sm mb-4">2. Which brackets are used for Tuples?</h3>
+                    <div class="space-y-3">
+                        <button onclick="checkFinalQuiz(2, false, this)" class="quiz-option text-xs w-full justify-start gap-3">Square brackets <code>[]</code></button>
+                        <button onclick="checkFinalQuiz(2, false, this)" class="quiz-option text-xs w-full justify-start gap-3">Curly braces <code>{}</code></button>
+                        <button onclick="checkFinalQuiz(2, true, this)" class="quiz-option text-xs w-full justify-start gap-3">Parentheses <code>()</code></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Lesson Banner Preview -->
+            <div id="next-lesson-preview" class="bg-alphagen-yellowPale border-2 border-alphagen-yellowDark p-4 rounded-2xl flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-alphagen-yellow text-alphagen-nearBlack flex items-center justify-center font-extrabold text-xl shadow-xs">
+                        🚀
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-sm text-alphagen-nearBlack">Coming Up in the Next Lesson:</h4>
+                        <p class="text-xs font-semibold text-alphagen-darkGrey">We will explore using <strong>Tuples inside Loops</strong> and processing <strong>User Inputs</strong>!</p>
+                    </div>
+                </div>
+                <span class="bg-alphagen-purple text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-xs">Part 2 Preview</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="nav-bar">
+        <button id="prev-btn" class="nav-btn btn-interactive" onclick="prevSlide()" disabled>
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Previous</span>
+        </button>
+        <span class="text-sm font-semibold text-white">
+            Use Arrow Keys (← / →) to navigate
+        </span>
+        <button id="next-btn" class="nav-btn btn-interactive" onclick="nextSlide()">
+            <span>Next</span>
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 10;
+        let soundEnabled = true;
+
+        /* Web Audio Synthesizer */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('audio-btn');
+            btn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'pop') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+                }
+            } catch (e) {}
+        }
+
+        /* Navigation Controls */
+        function initHeaderDots() {
+            const container = document.getElementById('header-dots-container');
+            container.innerHTML = '';
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = `dot-indicator ${i === 1 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function updateSlideDisplay() {
+            document.querySelectorAll('.slide-panel').forEach((panel, idx) => {
+                panel.classList.remove('active');
+                if (idx + 1 === currentSlide) panel.classList.add('active');
+            });
+
+            document.querySelectorAll('.dot-indicator').forEach((dot, idx) => {
+                if (idx + 1 === currentSlide) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+
+            document.getElementById('slide-counter-pill').innerText = `Slide ${currentSlide} / ${totalSlides}`;
+            document.getElementById('slide-dropdown').value = currentSlide;
+            document.getElementById('prev-btn').disabled = currentSlide === 1;
+            document.getElementById('next-btn').disabled = currentSlide === totalSlides;
+        }
+
+        function goToSlide(slideNum) {
+            if (slideNum >= 1 && slideNum <= totalSlides) {
+                currentSlide = slideNum;
+                playSound('pop');
+                updateSlideDisplay();
+            }
+        }
+        function nextSlide() { if (currentSlide < totalSlides) goToSlide(currentSlide + 1); }
+        function prevSlide() { if (currentSlide > 1) goToSlide(currentSlide - 1); }
+
+        /* Slide 2: Warm Up Check */
+        let s2state = {1:false, 2:false, 3:false};
+        function checkQuiz(slideNum, qNum, correctIndex, el) {
+            const parent = el.parentElement;
+            const options = parent.querySelectorAll('.quiz-option');
+            const clickedIndex = Array.from(options).indexOf(el) + 1;
+
+            options.forEach(opt => opt.classList.remove('correct', 'wrong'));
+
+            if (clickedIndex === correctIndex) {
+                playSound('correct');
+                el.classList.add('correct');
+                if(slideNum===2) s2state[qNum] = true;
+            } else {
+                playSound('wrong');
+                el.classList.add('wrong');
+                if(slideNum===2) s2state[qNum] = false;
+            }
+
+            if(slideNum===2 && s2state[1] && s2state[2] && s2state[3]){
+                const banner = document.getElementById('slide-2-banner');
+                banner.innerText = "Awesome! You remember lists perfectly. Let's learn Tuples!";
+                banner.className = "bg-emerald-100 border-2 border-emerald-500 p-3.5 rounded-2xl text-sm text-emerald-800 font-extrabold text-center";
+                if(typeof confetti === 'function') confetti({ particleCount: 60, spread: 60 });
+            }
+        }
+
+        /* Slide 3: Sealed Package Mailbox Analogy */
+        let toyBoxItems = [];
+        let isPackageSealed = false;
+
+        function addToyToBox(toyName) {
+            if (isPackageSealed) return;
+            playSound('pop');
+            if (!toyBoxItems.includes(toyName)) {
+                toyBoxItems.push(toyName);
+                renderToyBox();
+            }
+        }
+
+        function clearToyBox() {
+            if (isPackageSealed) return;
+            playSound('pop');
+            toyBoxItems = [];
+            renderToyBox();
+        }
+
+        function renderToyBox() {
+            const container = document.getElementById('package-box-contents');
+            if (toyBoxItems.length === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-400 font-mono" id="empty-box-msg">Box is currently empty! Click toys on the left to pack them inside.</span>`;
+            } else {
+                container.innerHTML = toyBoxItems.map(item => `<div class="bg-alphagen-purple text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md border border-alphagen-purpleMid animate-fadeIn">${item}</div>`).join('');
+            }
+        }
+
+        function sealAndSendPackage() {
+            if (toyBoxItems.length === 0) {
+                playSound('wrong');
+                alert("Please add at least 1 toy to the box before sealing!");
+                return;
+            }
+            playSound('correct');
+            isPackageSealed = true;
+            document.getElementById('package-status-badge').innerText = "Sealed & In Transit 🚚";
+            document.getElementById('package-status-badge').className = "bg-emerald-500 text-white font-bold text-xs px-3 py-1 rounded-full uppercase font-mono";
+            document.getElementById('btn-seal-package').style.display = 'none';
+            document.getElementById('analogy-q-box').classList.remove('hidden');
+        }
+
+        function answerPackageAnalogy(type) {
+            const conc = document.getElementById('analogy-conclusion');
+            if (type === 'no') {
+                playSound('correct');
+                conc.innerHTML = "🎯 <strong>Exactly right! The sealed package is Immutable!</strong> Once sent, you cannot alter the contents. <strong>Python Tuples work the exact same way!</strong>";
+                conc.className = "bg-emerald-100 border-2 border-emerald-500 p-3.5 rounded-2xl text-center text-sm font-bold text-emerald-900 shadow-md";
+                if(typeof confetti === 'function') confetti({ particleCount: 50, spread: 60 });
+            } else {
+                playSound('wrong');
+                conc.innerHTML = "❌ <strong>Incorrect!</strong> You cannot edit a package once it has been sealed and shipped. Tuples are also unchangeable (Immutable)!";
+                conc.className = "bg-alphagen-coralPale border-2 border-alphagen-coral p-3.5 rounded-2xl text-center text-sm font-bold text-alphagen-coralDark shadow-md";
+            }
+        }
+
+        /* Slide 5: Index Check */
+        function checkIndexInput() {
+            const val = document.getElementById('index-input').value.replace(/\s+/g, '');
+            const fb = document.getElementById('index-feedback');
+            if(val === 'names[2]' || val === 'names[-3]') {
+                playSound('correct');
+                fb.innerText = "✓ Correct! 'Charlie' is at index 2 (position 3).";
+                fb.className = "mt-5 text-sm font-extrabold h-6 text-emerald-600";
+                if(typeof confetti === 'function') confetti({ particleCount: 50, spread: 50 });
+            } else {
+                playSound('wrong');
+                fb.innerText = "✗ Incorrect. Try names[2] !";
+                fb.className = "mt-5 text-sm font-extrabold h-6 text-alphagen-coral";
+            }
+        }
+
+        /* Slide 6: Packing & Unpacking */
+        function simulatePacking() {
+            const p1 = document.getElementById('pack-1').value.trim() || "Alice";
+            const p2 = document.getElementById('pack-2').value.trim() || "Bob";
+            const p3 = document.getElementById('pack-3').value.trim() || "Charlie";
+            const p4 = document.getElementById('pack-4').value.trim() || "Diana";
+            const p5 = document.getElementById('pack-5').value.trim() || "Ethan";
+
+            document.getElementById('out-pack').innerText = `"${p1}", "${p2}", "${p3}", "${p4}", "${p5}"`;
+            document.getElementById('out-a').innerText = `"${p1}"`;
+            document.getElementById('out-b').innerText = `"${p2}"`;
+            document.getElementById('out-c').innerText = `"${p3}"`;
+            document.getElementById('out-d').innerText = `"${p4}"`;
+            document.getElementById('out-e').innerText = `"${p5}"`;
+
+            playSound('correct');
+            document.getElementById('packing-code').style.opacity = "1";
+        }
+
+        /* Slide 7: Concatenation */
+        function showConcatenation() {
+            playSound('correct');
+            document.getElementById('concat-btn').style.display = 'none';
+            document.getElementById('concat-result').classList.remove('hidden');
+            document.getElementById('concat-result').classList.add('flex');
+            if(typeof confetti === 'function') confetti({ particleCount: 50, spread: 60, origin: {y:0.8} });
+        }
+
+        /* Slide 8: Tuple Playground & Slicing */
+        function updateTuplePlayground() {
+            const input = document.getElementById('tup-playground-input').value;
+            let items = input.split(',').map(s => s.trim()).filter(s => s !== "");
+            
+            let dispStr = "(" + items.join(", ") + ")";
+            document.getElementById('tup-live-display').innerText = dispStr || "()";
+            document.getElementById('tup-len').innerText = items.length;
+
+            if (items.length > 0) {
+                let nums = items.map(Number).filter(n => !isNaN(n));
+                if (nums.length > 0) {
+                    document.getElementById('tup-min').innerText = Math.min(...nums);
+                    document.getElementById('tup-max').innerText = Math.max(...nums);
+                } else {
+                    document.getElementById('tup-min').innerText = "-";
+                    document.getElementById('tup-max').innerText = "-";
+                }
+
+                const sStart = parseInt(document.getElementById('slice-start').value);
+                const sEnd = parseInt(document.getElementById('slice-end').value);
+
+                document.getElementById('slice-expression-label').innerText = `my_tuple[${sStart}:${sEnd}]`;
+
+                let sliced = items.slice(sStart, sEnd);
+                document.getElementById('tup-slice').innerText = "(" + sliced.join(", ") + (sliced.length===1?",":"") + ")";
+            } else {
+                document.getElementById('tup-min').innerText = "-";
+                document.getElementById('tup-max').innerText = "-";
+                document.getElementById('tup-slice').innerText = "()";
+            }
+        }
+
+        /* Slide 9: Checklist & Solution Box Toggle */
+        function toggleTaskCheckbox(id) {
+            playSound('pop');
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('checked');
+        }
+
+        function toggleSolutionBox() {
+            playSound('pop');
+            const box = document.getElementById('solution-code-box');
+            const msg = document.getElementById('solution-placeholder-msg');
+            const btnText = document.getElementById('solution-toggle-btn-text');
+
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                msg.classList.add('hidden');
+                btnText.innerText = "Hide Solution";
+            } else {
+                box.classList.add('hidden');
+                msg.classList.remove('hidden');
+                btnText.innerText = "Show Solution Code";
+            }
+        }
+
+        /* Slide 10: Final Quiz */
+        let finalState = {1:false, 2:false};
+        function checkFinalQuiz(qNum, isCorrect, el) {
+            const parent = el.parentElement;
+            const options = parent.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.classList.remove('correct', 'wrong'));
+
+            if (isCorrect) {
+                playSound('correct');
+                el.classList.add('correct');
+                finalState[qNum] = true;
+            } else {
+                playSound('wrong');
+                el.classList.add('wrong');
+                finalState[qNum] = false;
+            }
+
+            if (finalState[1] && finalState[2]) {
+                if(typeof confetti === 'function') confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+            }
+        }
+
+        /* Keyboard Listener */
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        /* Page Initialization */
+        window.addEventListener('DOMContentLoaded', () => {
+            initHeaderDots();
+            updateSlideDisplay();
+            updateTuplePlayground();
+        });
+    </script>
+</body>
+</html>
